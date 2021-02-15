@@ -11,48 +11,6 @@ from pathlib import Path
 with contextlib.redirect_stdout(open(os.devnull, 'w')):
     import pygame as pg
 
-def breakmasks(size, arcmin=5, arcmax=20):
-    """
-    Generate random image masks of rays from center.
-    """
-    rect = pg.Rect((0, 0), size)
-    length = max(size) * 2
-    color = (255, 255, 255)
-    start = end = 0
-    while end != 360:
-        end = random.choice(range(start + arcmin, start + arcmax))
-        if end > 360:
-            end = 360
-        start_radians = math.radians(start)
-        end_radians = math.radians(end)
-        points = (
-            rect.center,
-            (rect.centerx + math.cos(start_radians) * length,
-             rect.centery - math.sin(start_radians) * length),
-            (rect.centerx + math.cos(end_radians) * length,
-             rect.centery - math.sin(end_radians) * length)
-        )
-        mask = pg.Surface(size, pg.SRCALPHA)
-        pg.draw.polygon(mask, color, points, 0)
-        yield mask
-        start = end
-
-def breakimage(source, shake=5):
-    """
-    Return a "broken" image of the source.
-    """
-    flags = pg.BLEND_RGBA_MULT
-    size = source.get_size()
-    result = pg.Surface(size, pg.SRCALPHA)
-    masks = breakmasks(size)
-    for mask in masks:
-        temp = pg.Surface(size, pg.SRCALPHA)
-        pos = (random.choice(range(-shake, shake+1)), random.choice(range(-shake, shake+1)))
-        temp.blit(source, pos)
-        temp.blit(mask, (0, 0), special_flags=flags)
-        result.blit(temp, (0, 0))
-    return result
-
 class Clock:
 
     def __init__(self, framerate):
@@ -123,6 +81,48 @@ class BreakingBroke:
     def update(self, ms):
         pass
 
+
+def breakmasks(size, arcmin=5, arcmax=20):
+    """
+    Generate random image masks of rays from center.
+    """
+    rect = pg.Rect((0, 0), size)
+    length = max(size) * 2
+    color = (255, 255, 255)
+    start = end = 0
+    while end != 360:
+        end = random.choice(range(start + arcmin, start + arcmax))
+        if end > 360:
+            end = 360
+        start_radians = math.radians(start)
+        end_radians = math.radians(end)
+        points = (
+            rect.center,
+            (rect.centerx + math.cos(start_radians) * length,
+             rect.centery - math.sin(start_radians) * length),
+            (rect.centerx + math.cos(end_radians) * length,
+             rect.centery - math.sin(end_radians) * length)
+        )
+        mask = pg.Surface(size, pg.SRCALPHA)
+        pg.draw.polygon(mask, color, points, 0)
+        yield mask
+        start = end
+
+def breakimage(source, shake=5):
+    """
+    Return a "broken" image of the source.
+    """
+    flags = pg.BLEND_RGBA_MULT
+    size = source.get_size()
+    result = pg.Surface(size, pg.SRCALPHA)
+    masks = breakmasks(size)
+    for mask in masks:
+        temp = pg.Surface(size, pg.SRCALPHA)
+        pos = (random.choice(range(-shake, shake+1)), random.choice(range(-shake, shake+1)))
+        temp.blit(source, pos)
+        temp.blit(mask, (0, 0), special_flags=flags)
+        result.blit(temp, (0, 0))
+    return result
 
 def main(argv=None):
     """
